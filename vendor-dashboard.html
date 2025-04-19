@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Dashboard - SapaSpots</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    /* Dashboard styles */
+    .dashboard-header {
+      padding: 2rem 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      margin: 1.5rem auto;
+      max-width: 1200px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .dashboard-title-area {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .dashboard-welcome {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 0.5rem;
+    }
+    
+    .dashboard-subtitle {
+      color: #6c757d;
+      margin-bottom: 0;
+    }
+    
+    .status-toggle-area {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .current-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .indicator-open {
+      background-color: #28a745;
+    }
+    
+    .indicator-closed {
+      background-color: #dc3545;
+    }
+    
+    .toggle-btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: none;
+    }
+    
+    .toggle-open {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .toggle-open:hover {
+      background-color: #218838;
+    }
+    
+    .toggle-closed {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    .toggle-closed:hover {
+      background-color: #c82333;
+    }
+    
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto 3rem;
+      padding: 0 1.5rem;
+    }
+    
+    .orders-table-container {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    
+    .table-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .table-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #212529;
+      margin: 0;
+    }
+    
+    .orders-count {
+      font-size: 0.9rem;
+      color: #6c757d;
+      background-color: #f1f3f5;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+    }
+    
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .orders-table th {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+      text-align: left;
+      padding: 1rem 1.5rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .orders-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e9ecef;
+      color: #212529;
+      font-size: 0.95rem;
+    }
+    
+    .orders-table tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .orders-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .order-id {
+      font-weight: 500;
+      color: #0066cc;
+    }
+    
+    .customer-details {
+      line-height: 1.5;
+    }
+    
+    .customer-name {
+      font-weight: 500;
+    }
+    
+    .customer-phone {
+      color: #495057;
+    }
+    
+    .customer-location {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    
+    .order-items {
+      max-width: 250px;
+    }
+    
+    .item-pill {
+      display: inline-flex;
+      align-items: center;
+      background-color: #f1f3f5;
+      color: #495057;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 20px;
+      margin: 0.1rem;
+      white-space: nowrap;
+    }
+    
+    .item-quantity {
+      font-weight: 600;
+      margin-right: 0.25rem;
+    }
+    
+    .order-status {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-accepted {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-rejected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .status-cancelled {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+    
+    .action-btn {
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      margin-right: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    
+    .btn-accept {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .btn-accept:hover {
+      background-color: #218838;
+    }
+    
+    .btn-reject {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    .btn-reject:hover {
+      background-color: #c82333;
+    }
+    
+    .no-orders {
+      padding: 3rem 2rem;
+      text-align: center;
+      color: #6c757d;
+    }
+    
+    .no-orders-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #adb5bd;
+    }
+    
+    .no-orders-message {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .no-orders-submessage {
+      font-size: 0.95rem;
+      margin-bottom: 0;
+      color: #868e96;
+    }
+    
+    /* Toast notification */
+    .toast-container {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+    }
+    
+    .toast {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transform: translateX(120%);
+      transition: transform 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    
+    .toast-success .toast-icon {
+      color: #28a745;
+    }
+    
+    .toast-error .toast-icon {
+      color: #dc3545;
+    }
+    
+    .toast-info .toast-icon {
+      color: #0066cc;
+    }
+    
+    .toast-message {
+      flex: 1;
+      font-size: 0.95rem;
+      color: #212529;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 992px) {
+      /* Table styles for medium screens */
+      .orders-table th:nth-child(3),
+      .orders-table td:nth-child(3) {
+        display: none; /* Hide phone column */
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.5rem 1rem;
+        margin: 1rem;
+      }
+      
+      .status-toggle-area {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .dashboard-container {
+        padding: 0 1rem;
+      }
+      
+      /* Convert table to cards */
+      .orders-table,
+      .orders-table thead,
+      .orders-table tbody,
+      .orders-table th,
+      .orders-table td,
+      .orders-table tr {
+        display: block;
+      }
+      
+      .orders-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      
+      .orders-table tr {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 0;
+      }
+      
+      .orders-table tr:last-child {
+        border-bottom: none;
+      }
+      
+      .orders-table td {
+        border: none;
+        position: relative;
+        padding: 0.5rem 1rem 0.5rem 50%;
+        white-space: normal;
+        text-align: left;
+      }
+      
+      .orders-table td:before {
+        position: absolute;
+        top: 0.5rem;
+        left: 1rem;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.85rem;
+      }
+      
+      /* Add labels */
+      .orders-table td:nth-of-type(1):before { content: "Order ID"; }
+      .orders-table td:nth-of-type(2):before { content: "Customer"; }
+      .orders-table td:nth-of-type(3):before { content: "Phone"; }
+      .orders-table td:nth-of-type(4):before { content: "Location"; }
+      .orders-table td:nth-of-type(5):before { content: "Items"; }
+      .orders-table td:nth-of-type(6):before { content: "Status"; }
+      .orders-table td:nth-of-type(7):before { content: "Actions"; }
+    }
+    
+    @media (max-width: 480px) {
+      .orders-table td {
+        padding-left: 1rem;
+        padding-top: 2rem;
+      }
+      
+      .orders-table td:before {
+        position: relative;
+        display: block;
+        left: 0;
+        top: -0.5rem;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-container"></div>
+  
+  <!-- Toast container for notifications -->
+  <div class="toast-container" id="toast-container">
+    <!-- Toasts will be added here -->
+  </div>
+  
+  <main>
+    <!-- Dashboard header with vendor info and status toggle -->
+    <div class="dashboard-header">
+      <div class="dashboard-title-area">
+        <div>
+          <h1 class="dashboard-welcome">Vendor Dashboard</h1>
+          <p class="dashboard-subtitle">Manage your orders and store settings</p>
+        </div>
+      </div>
+      
+      <div class="status-toggle-area">
+        <div class="current-status">
+          <div class="status-indicator" id="status-indicator"></div>
+          <span id="status-text">Loading...</span>
+        </div>
+        <button id="toggle-status-btn" class="toggle-btn">Loading...</button>
+      </div>
+    </div>
+    
+    <!-- Dashboard container -->
+    <div class="dashboard-container">
+      <!-- Orders table -->
+      <div class="orders-table-container">
+        <div class="table-header">
+          <h2 class="table-title">Recent Orders</h2>
+          <span class="orders-count" id="orders-count">0 orders</span>
+        </div>
+        
+        <div id="orders-table-wrapper">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Student Name</th>
+                <th>Phone</th>
+                <th>Location</th>
+                <th>Items</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <!-- Orders will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- No orders template -->
+  <template id="no-orders-template">
+    <div class="no-orders">
+      <div class="no-orders-icon">📋</div>
+      <div class="no-orders-message">No orders yet</div>
+      <div class="no-orders-submessage">Orders will appear here when customers place them</div>
+    </div>
+  </template>
+  
+  <!-- Footer will be loaded here -->
+  <div id="footer-container"></div>
+  
+  <script src="localstorage-utils.js"></script>
+  <script src="script.js"></script>
+  <script src="realtime-sync.js"></script>
+  <script>
+    // Current vendor data
+    let currentVendor;
+    
+    // Format date to readable format
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
+    }
+    
+    // Get vendor data from localStorage
+    function getVendorData() {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+      const vendors = JSON.parse(localStorage.getItem('vendors')) || [];
+      
+      // For demo purposes, we'll use the first vendor or create a mock one
+      if (vendors.length > 0) {
+        currentVendor = vendors[0];
+      } else {
+        // Mock vendor for testing
+        currentVendor = {
+          id: 'v1',
+          vendorId: 'v1',
+          name: 'Demo Vendor',
+          open: true,
+          location: 'Main Campus'
+        };
+      }
+      
+      updateVendorStatusUI();
+    }
+    
+    // Update vendor status UI
+    function updateVendorStatusUI() {
+      const statusIndicator = document.getElementById('status-indicator');
+      const statusText = document.getElementById('status-text');
+      const toggleBtn = document.getElementById('toggle-status-btn');
+      
+      if (currentVendor.open) {
+        statusIndicator.classList.add('indicator-open');
+        statusIndicator.classList.remove('indicator-closed');
+        statusText.textContent = 'Your store is OPEN';
+        
+        toggleBtn.textContent = 'Mark as Closed';
+        toggleBtn.classList.add('toggle-closed');
+        toggleBtn.classList.remove('toggle-open');
+      } else {
+        statusIndicator.classList.add('indicator-closed');
+        statusIndicator.classList.remove('indicator-open');
+        statusText.textContent = 'Your store is CLOSED';
+        
+        toggleBtn.textContent = 'Mark as Open';
+        toggleBtn.classList.add('toggle-open');
+        toggleBtn.classList.remove('toggle-closed');
+      }
+    }
+    
+    // Toggle vendor status
+    function toggleVendorStatus() {
+      // Toggle the open status
+      currentVendor.open = !currentVendor.open;
+      
+      // Update vendor in localStorage
+      const vendors = JSON.parse(localStorage.getItem('vendors')) || [];
+      const updatedVendors = vendors.map(vendor => {
+        if (vendor.id === currentVendor.id || vendor.vendorId === currentVendor.vendorId) {
+          return { ...vendor, open: currentVendor.open };
+        }
+        return vendor;
+      });
+      
+      localStorage.setItem('vendors', JSON.stringify(updatedVendors));
+      
+      // Update UI
+      updateVendorStatusUI();
+      
+      // Show toast notification
+      const status = currentVendor.open ? 'open' : 'closed';
+      showToast('success', `Your store is now ${status}`);
+    }
+    
+    // Get orders for current vendor
+    function getVendorOrders() {
+      // Use the improved getOrders function from localstorage-utils.js
+      const allOrders = getOrders();
+      
+      // Return all orders for all vendors, sorted by timestamp
+      return allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+    
+    // Load and display orders
+    function loadOrders() {
+      const orders = getVendorOrders();
+      const tableBody = document.getElementById('orders-table-body');
+      const tableWrapper = document.getElementById('orders-table-wrapper');
+      const ordersCount = document.getElementById('orders-count');
+      
+      // Update orders count
+      ordersCount.textContent = `${orders.length} order${orders.length !== 1 ? 's' : ''}`;
+      
+      // Clear the table body
+      tableBody.innerHTML = '';
+      
+      // If no orders, show message
+      if (orders.length === 0) {
+        const noOrdersTemplate = document.getElementById('no-orders-template');
+        tableWrapper.innerHTML = '';
+        tableWrapper.appendChild(noOrdersTemplate.content.cloneNode(true));
+        return;
+      }
+      
+      // Add orders to table
+      orders.forEach(order => {
+        const row = document.createElement('tr');
+        
+        // Create customer info
+        const customerName = order.customer?.name || 'Unknown';
+        const customerPhone = order.customer?.phone || 'N/A';
+        const customerLocation = order.customer ? 
+          `${order.customer.hall || 'N/A'}, Room ${order.customer.room || 'N/A'}` : 
+          'Not specified';
+        
+        // Create items summary
+        const itemsSummary = order.items.map(item => 
+          `<span class="item-pill"><span class="item-quantity">${item.qty}x</span> ${item.name}</span>`
+        ).join(' ');
+        
+        // Create status badge
+        const statusClass = `status-${order.status.toLowerCase()}`;
+        const statusBadge = `<span class="order-status ${statusClass}">${order.status.toUpperCase()}</span>`;
+        
+        // Create action buttons based on order status
+        let actionButtons = '';
+        if (order.status.toLowerCase() === 'pending') {
+          actionButtons = `
+            <button class="action-btn btn-accept" onclick="handleOrderStatusUpdate('${order.orderId}', 'accepted')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Accept
+            </button>
+            <button class="action-btn btn-reject" onclick="handleOrderStatusUpdate('${order.orderId}', 'rejected')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Reject
+            </button>
+          `;
+        } else {
+          actionButtons = `<span style="color: #6c757d; font-size: 0.9rem;">No actions available</span>`;
+        }
+        
+        // Add data to row
+        row.innerHTML = `
+          <td><span class="order-id">${order.orderId}</span></td>
+          <td>
+            <div class="customer-details">
+              <div class="customer-name">${customerName}</div>
+            </div>
+          </td>
+          <td>
+            <div class="customer-phone">${customerPhone}</div>
+          </td>
+          <td>
+            <div class="customer-location">${customerLocation}</div>
+          </td>
+          <td class="order-items">${itemsSummary}</td>
+          <td>${statusBadge}</td>
+          <td>${actionButtons}</td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+    
+    // Update order status
+    function handleOrderStatusUpdate(orderId, newStatus) {
+      // Use the updateOrderStatus function from localstorage-utils.js
+      const updated = updateOrderStatus(orderId, newStatus);
+      
+      if (!updated) {
+        // If update failed, show error toast
+        showToast('error', `Failed to update order ${orderId}`);
+        return;
+      }
+      
+      // Reload orders
+      loadOrders();
+      
+      // Show toast notification
+      const actionText = newStatus === 'accepted' ? 'accepted' : 'rejected';
+      showToast('success', `Order ${orderId} has been ${actionText}`);
+      
+      // Manually trigger storage event to update other pages
+      // This ensures real-time updates across all pages
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'orders',
+        newValue: localStorage.getItem('orders')
+      }));
+    }
+    
+    // Show toast notification
+    function showToast(type, message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      let iconSvg = '';
+      if (type === 'success') {
+        iconSvg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toast-icon">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        `;
+      } else if (type === 'error') {
+        iconSvg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toast-icon">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        `;
+      } else {
+        iconSvg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toast-icon">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        `;
+      }
+      
+      toast.innerHTML = `
+        ${iconSvg}
+        <div class="toast-message">${message}</div>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Trigger reflow to allow animation
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 10);
+      
+      // Remove toast after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          container.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+    
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      // Get vendor data
+      getVendorData();
+      
+      // Load orders
+      loadOrders();
+      
+      // Add event listener for toggle button
+      document.getElementById('toggle-status-btn').addEventListener('click', toggleVendorStatus);
+      
+      // Set up periodic order check every 30 seconds
+      setInterval(() => {
+        // Check for new orders from all storage sources
+        loadOrders();
+      }, 30000);
+    });
+    
+    // For realtime sync - implement refresh function
+    function refreshVendorDashboard() {
+      getVendorData();
+      loadOrders();
+    }
+  </script>
+</body>
+</html> 

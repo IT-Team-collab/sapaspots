@@ -1,0 +1,88 @@
+<header class="site-header">
+  <div class="header-container">
+    <div class="logo-container">
+      <a href="index.html">
+        <img src="sapaspots-logo-alt.svg" alt="SapaSpots" class="logo">
+      </a>
+    </div>
+    
+    <button class="menu-toggle" aria-label="Toggle navigation menu" onclick="toggleMobileMenu()">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+    
+    <nav class="main-nav">
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li class="student-only-nav"><a href="vendors.html" class="nav-link">Vendors</a></li>
+        <li><a href="map.html" class="nav-link">Map</a></li>
+        <li class="student-only-nav"><a href="my-orders.html" class="nav-link">My Orders</a></li>
+        <li class="vendor-only-nav"><a href="vendor-dashboard.html" class="nav-link">Dashboard</a></li>
+      </ul>
+    </nav>
+    
+    <div class="user-menu">
+      <div class="user-info">
+        <img id="user-image" src="default-user.png" alt="Profile Picture" class="user-avatar">
+        <span id="user-name" class="username">User</span>
+      </div>
+      <button id="logout-btn" class="logout-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<style>
+  /* Navigation visibility styles */
+  .student-only-nav, .vendor-only-nav {
+    transition: all 0.3s ease;
+  }
+  
+  .nav-links li.hidden {
+    display: none;
+  }
+  
+  /* Fix display issue with list items */
+  .nav-links li {
+    display: flex;
+  }
+</style>
+
+<script>
+  // Check if user is logged in
+  (function() {
+    const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+    if (!userProfile || !userProfile.type) {
+      window.location.href = 'login.html';
+    } else {
+      // Show/hide navigation links based on user type
+      const isVendor = userProfile.type === 'vendor';
+      
+      const studentOnlyElements = document.querySelectorAll('.student-only-nav');
+      const vendorOnlyElements = document.querySelectorAll('.vendor-only-nav');
+      
+      studentOnlyElements.forEach(element => {
+        if (isVendor) {
+          element.classList.add('hidden');
+        } else {
+          element.classList.remove('hidden');
+        }
+      });
+      
+      vendorOnlyElements.forEach(element => {
+        if (isVendor) {
+          element.classList.remove('hidden');
+        } else {
+          element.classList.add('hidden');
+        }
+      });
+    }
+  })();
+</script> 

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - SapaSpots</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    /* Dashboard styles */
+    .dashboard-header {
+      padding: 2rem 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      margin: 1.5rem auto;
+      max-width: 1000px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    
+    .dashboard-user-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dashboard-user-info {
+      flex: 1;
+    }
+    
+    .dashboard-welcome {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 0.5rem;
+    }
+    
+    .dashboard-subtitle {
+      color: #6c757d;
+      margin-bottom: 0;
+    }
+    
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      max-width: 1000px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1.5rem;
+    }
+    
+    .stat-card {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0066cc;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: #495057;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    
+    .dashboard-section {
+      max-width: 1000px;
+      margin: 0 auto 3rem;
+      padding: 0 1.5rem;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #212529;
+      margin: 0;
+    }
+    
+    .view-all-link {
+      color: #0066cc;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    
+    .view-all-link svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .order-card {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .order-card:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .order-id {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #212529;
+      margin: 0;
+    }
+    
+    .order-date {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    
+    .order-status {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-accepted {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-rejected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .status-cancelled {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+    
+    .order-vendor {
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #495057;
+      font-size: 0.95rem;
+    }
+    
+    .order-vendor svg {
+      width: 16px;
+      height: 16px;
+      color: #6c757d;
+    }
+    
+    .order-items {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .order-item-pill {
+      background-color: #f1f3f5;
+      color: #495057;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .item-quantity {
+      font-weight: 600;
+      margin-right: 0.35rem;
+    }
+    
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .order-total {
+      font-weight: 600;
+      color: #212529;
+    }
+    
+    .order-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .btn-action {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    
+    .btn-primary {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+    }
+    
+    .btn-primary:hover {
+      background-color: #0052a3;
+    }
+    
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+    }
+    
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid #dee2e6;
+      color: #495057;
+    }
+    
+    .btn-outline:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .no-orders {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6c757d;
+    }
+    
+    .no-orders svg {
+      width: 64px;
+      height: 64px;
+      color: #adb5bd;
+      margin-bottom: 1rem;
+    }
+    
+    .no-orders-message {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .start-ordering-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.25rem;
+      background-color: #0066cc;
+      color: white;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      gap: 0.5rem;
+    }
+    
+    .start-ordering-btn:hover {
+      background-color: #0052a3;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem 1rem;
+        gap: 1rem;
+        margin: 1rem;
+      }
+      
+      .dashboard-stats {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+      }
+      
+      .dashboard-section {
+        padding: 0 1rem;
+      }
+      
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      
+      .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .order-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+      
+      .order-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-container"></div>
+  
+  <main>
+    <!-- Dashboard header -->
+    <div class="dashboard-header">
+      <img id="user-avatar" src="default-user.png" alt="User Avatar" class="dashboard-user-avatar">
+      <div class="dashboard-user-info">
+        <h1 class="dashboard-welcome">Welcome, <span id="dashboard-user-name">Student</span>!</h1>
+        <p class="dashboard-subtitle">View and manage all system orders</p>
+      </div>
+    </div>
+    
+    <!-- Dashboard stats -->
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <div class="stat-number" id="total-orders-count">0</div>
+        <div class="stat-label">Total Orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="pending-orders-count">0</div>
+        <div class="stat-label">Pending Orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="completed-orders-count">0</div>
+        <div class="stat-label">Completed Orders</div>
+      </div>
+    </div>
+    
+    <!-- Recent orders section -->
+    <section class="dashboard-section">
+      <div class="section-header">
+        <h2 class="section-title">All Orders</h2>
+        <a href="my-orders.html" class="view-all-link">
+          View Details
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="M12 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+      
+      <!-- Orders list -->
+      <div class="orders-list" id="orders-list">
+        <!-- Orders will be populated with JavaScript -->
+      </div>
+    </section>
+  </main>
+  
+  <!-- No orders template -->
+  <template id="no-orders-template">
+    <div class="no-orders">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
+        <rect x="9" y="3" width="6" height="4" rx="2"></rect>
+        <path d="M9 14h.01"></path>
+        <path d="M13 14h.01"></path>
+        <path d="M9 18h.01"></path>
+        <path d="M13 18h.01"></path>
+      </svg>
+      <div class="no-orders-message">No orders have been placed in the system yet</div>
+      <a href="vendors.html" class="start-ordering-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Start Ordering
+      </a>
+    </div>
+  </template>
+  
+  <!-- Footer will be loaded here -->
+  <div id="footer-container"></div>
+  
+  <script src="localstorage-utils.js"></script>
+  <script src="script.js"></script>
+  <script src="realtime-sync.js"></script>
+  <script>
+    // Format price in UGX
+    function formatPrice(price) {
+      return 'UGX ' + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    
+    // Format date to readable format
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
+    }
+    
+    // Get vendor name from vendorId
+    function getVendorName(vendorId) {
+      const vendors = JSON.parse(localStorage.getItem('vendors')) || [];
+      const vendor = vendors.find(v => v.id === vendorId || v.vendorId === vendorId);
+      return vendor ? vendor.name : 'Unknown Vendor';
+    }
+    
+    // Get all orders for the student dashboard
+    function getUserOrders() {
+      // Use the improved getOrders function from localstorage-utils.js to get all orders
+      const orders = getOrders();
+      
+      // Sort by date descending (newest first)
+      return orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+    
+    // Update order status
+    function updateOrder(orderId, newStatus) {
+      // Use the updateOrderStatus function from localstorage-utils.js
+      const updated = updateOrderStatus(orderId, newStatus);
+      
+      if (!updated) {
+        alert('Failed to update order. Please try again.');
+        return;
+      }
+      
+      // Refresh the dashboard
+      loadDashboard();
+      
+      // Manually trigger storage event to update other pages
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'orders',
+        newValue: localStorage.getItem('orders')
+      }));
+    }
+    
+    // Cancel an order
+    function cancelOrder(orderId) {
+      if (confirm('Are you sure you want to cancel this order?')) {
+        updateOrder(orderId, 'cancelled');
+      }
+    }
+    
+    // Create order card element
+    function createOrderCard(order) {
+      const orderCard = document.createElement('div');
+      orderCard.className = 'order-card';
+      
+      // Create status badge element
+      const statusBadge = document.createElement('span');
+      statusBadge.className = `order-status status-${order.status.toLowerCase()}`;
+      statusBadge.textContent = order.status.toUpperCase();
+      
+      // Create items summary
+      const itemsSummary = order.items.map(item => {
+        return `<div class="order-item-pill"><span class="item-quantity">${item.qty}x</span> ${item.name}</div>`;
+      }).join('');
+      
+      // Create vendor name element
+      const vendorName = getVendorName(order.vendorId);
+      
+      // Create action buttons based on order status
+      let actionButtons = '';
+      if (order.status.toLowerCase() === 'pending') {
+        actionButtons = `
+          <button class="btn-action btn-danger" onclick="cancelOrder('${order.orderId}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Cancel Order
+          </button>
+        `;
+      }
+      
+      orderCard.innerHTML = `
+        <div class="order-header">
+          <h3 class="order-id">${order.orderId}</h3>
+          <span class="order-date">${formatDate(order.timestamp)}</span>
+          ${statusBadge.outerHTML}
+        </div>
+        <div class="order-vendor">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          ${vendorName}
+        </div>
+        <div class="order-items">
+          ${itemsSummary}
+        </div>
+        <div class="order-footer">
+          <div class="order-total">${formatPrice(order.total)}</div>
+          <div class="order-actions">
+            <a href="my-orders.html?id=${order.orderId}" class="btn-action btn-outline">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              View Details
+            </a>
+            ${actionButtons}
+          </div>
+        </div>
+      `;
+      
+      return orderCard;
+    }
+    
+    // Load dashboard data
+    function loadDashboard() {
+      // Load user profile
+      const userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+      
+      // Update user info in header
+      document.getElementById('dashboard-user-name').textContent = userProfile.name || 'Student';
+      document.getElementById('user-avatar').src = userProfile.picUrl || 'default-user.png';
+      
+      // Get all orders
+      const orders = getUserOrders();
+      
+      // Count orders by status
+      const totalOrders = orders.length;
+      const pendingOrders = orders.filter(order => order.status.toLowerCase() === 'pending').length;
+      const completedOrders = orders.filter(order => 
+        ['accepted', 'delivered', 'completed'].includes(order.status.toLowerCase())
+      ).length;
+      
+      // Update stats
+      document.getElementById('total-orders-count').textContent = totalOrders;
+      document.getElementById('pending-orders-count').textContent = pendingOrders;
+      document.getElementById('completed-orders-count').textContent = completedOrders;
+      
+      // Get the orders list container
+      const ordersList = document.getElementById('orders-list');
+      ordersList.innerHTML = '';
+      
+      // If no orders, show empty state
+      if (orders.length === 0) {
+        const noOrdersTemplate = document.getElementById('no-orders-template');
+        ordersList.appendChild(noOrdersTemplate.content.cloneNode(true));
+        return;
+      }
+      
+      // Display all orders
+      orders.forEach(order => {
+        ordersList.appendChild(createOrderCard(order));
+      });
+    }
+    
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+    
+    // Define refresh function for realtime sync
+    function refreshStudentDashboard() {
+      loadDashboard();
+    }
+  </script>
+</body>
+</html> 

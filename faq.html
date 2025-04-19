@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ - SapaSpots</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    /* FAQ page styles */
+    .page-header {
+      padding: 2.5rem 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      margin: 1.5rem auto;
+      max-width: 1200px;
+      text-align: center;
+    }
+    
+    .page-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 1rem;
+    }
+    
+    .page-subtitle {
+      color: #6c757d;
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: 0 auto 1.5rem;
+    }
+    
+    .page-content {
+      max-width: 900px;
+      margin: 0 auto 3rem;
+      padding: 0 1.5rem;
+    }
+    
+    .faq-search {
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 4px 16px rgba(0, 102, 204, 0.15);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #adb5bd;
+    }
+    
+    .faq-categories {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .category-btn {
+      padding: 0.75rem 1.25rem;
+      background-color: #f1f3f5;
+      border: none;
+      border-radius: 30px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .category-btn:hover {
+      background-color: #e9ecef;
+    }
+    
+    .category-btn.active {
+      background-color: #0066cc;
+      color: white;
+    }
+    
+    .faq-section {
+      margin-bottom: 2.5rem;
+    }
+    
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 1.5rem;
+      position: relative;
+      padding-left: 1rem;
+      border-left: 4px solid #0066cc;
+    }
+    
+    .faq-accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .faq-item {
+      background-color: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .faq-item:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .faq-question {
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #212529;
+      padding-right: 2rem;
+    }
+    
+    .question-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    
+    .question-icon::before,
+    .question-icon::after {
+      content: '';
+      position: absolute;
+      background-color: #0066cc;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .question-icon::before {
+      width: 16px;
+      height: 2px;
+    }
+    
+    .question-icon::after {
+      width: 2px;
+      height: 16px;
+      transition: transform 0.3s ease;
+    }
+    
+    .faq-answer {
+      padding: 0 1.5rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+    
+    .answer-content {
+      color: #495057;
+      font-size: 1rem;
+      line-height: 1.7;
+      padding-bottom: 1.5rem;
+    }
+    
+    .faq-item.active .question-icon::after {
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+    
+    .faq-item.active .faq-answer {
+      max-height: 500px;
+    }
+    
+    .faq-item.active {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .faq-not-found {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6c757d;
+      display: none;
+    }
+    
+    .faq-not-found svg {
+      width: 64px;
+      height: 64px;
+      color: #adb5bd;
+      margin-bottom: 1rem;
+    }
+    
+    .contact-cta {
+      margin-top: 3rem;
+      text-align: center;
+      padding: 2.5rem;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+    }
+    
+    .cta-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 1rem;
+    }
+    
+    .cta-text {
+      color: #6c757d;
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.875rem 1.5rem;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .contact-btn:hover {
+      background-color: #0052a3;
+      transform: translateY(-2px);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .page-header {
+        padding: 2rem 1rem;
+        margin: 1rem;
+      }
+      
+      .page-title {
+        font-size: 1.8rem;
+      }
+      
+      .page-subtitle {
+        font-size: 1.1rem;
+      }
+      
+      .page-content {
+        padding: 0 1rem;
+      }
+      
+      .search-input {
+        padding: 1rem 1rem 1rem 3rem;
+        font-size: 1rem;
+      }
+      
+      .section-title {
+        font-size: 1.4rem;
+      }
+      
+      .question-text {
+        font-size: 1rem;
+      }
+      
+      .contact-cta {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-container"></div>
+  
+  <main>
+    <!-- Page header -->
+    <div class="page-header">
+      <h1 class="page-title">Frequently Asked Questions</h1>
+      <p class="page-subtitle">Find answers to the most common questions about SapaSpots and how our platform works</p>
+    </div>
+    
+    <!-- Page content -->
+    <div class="page-content">
+      <!-- Search box -->
+      <div class="faq-search">
+        <input type="text" class="search-input" id="faq-search-input" placeholder="Search for questions...">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Categories -->
+      <div class="faq-categories">
+        <button class="category-btn active" data-category="all">All Questions</button>
+        <button class="category-btn" data-category="ordering">Ordering</button>
+        <button class="category-btn" data-category="payment">Payment</button>
+        <button class="category-btn" data-category="delivery">Delivery</button>
+        <button class="category-btn" data-category="account">Account</button>
+      </div>
+      
+      <!-- Not found message -->
+      <div class="faq-not-found" id="faq-not-found">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <h3>No matching questions found</h3>
+        <p>Try adjusting your search or browse all categories</p>
+      </div>
+      
+      <!-- Ordering section -->
+      <section class="faq-section" data-category="ordering">
+        <h2 class="section-title">Ordering</h2>
+        
+        <div class="faq-accordion">
+          <div class="faq-item" data-category="ordering">
+            <div class="faq-question">
+              <div class="question-text">How do I place an order on SapaSpots?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Placing an order is easy! First, log in to your account and browse through available vendors. Select a vendor to view their menu, add items to your tray, and then click "Proceed to Checkout". Review your order, confirm your delivery details, choose a payment method, and submit your order. You'll receive a confirmation notification once the vendor accepts your order.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="ordering">
+            <div class="faq-question">
+              <div class="question-text">Can I customize my food order?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes, many vendors allow customization of menu items. When adding an item to your tray, look for customization options such as "Special Instructions" or specific add-ons. Note that customization availability varies by vendor, and some may have limitations on changes to their menu items.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="ordering">
+            <div class="faq-question">
+              <div class="question-text">Can I schedule an order for later?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Currently, SapaSpots only supports immediate orders. However, you can always check a vendor's operating hours and place your order during their open hours. We're working on adding scheduled orders in future updates to the platform.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="ordering">
+            <div class="faq-question">
+              <div class="question-text">How do I know if a vendor is open?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Vendor availability is clearly displayed on the vendors list and on individual vendor pages. Open vendors are marked with a green "Open" badge, while closed vendors show a red "Closed" status. You can also see the operating hours listed on each vendor's page to plan accordingly.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Payment section -->
+      <section class="faq-section" data-category="payment">
+        <h2 class="section-title">Payment</h2>
+        
+        <div class="faq-accordion">
+          <div class="faq-item" data-category="payment">
+            <div class="faq-question">
+              <div class="question-text">What payment methods are accepted?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>SapaSpots currently accepts Mobile Money (MTN and Airtel), cash on delivery, and campus meal cards. We're working to add more payment options including credit/debit cards in the near future. You can select your preferred payment method during checkout.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="payment">
+            <div class="faq-question">
+              <div class="question-text">Is there a minimum order amount?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Minimum order amounts vary by vendor. Some vendors have a minimum order requirement, which will be clearly displayed on their page and at checkout. If your order doesn't meet the minimum, you'll need to add more items before proceeding.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="payment">
+            <div class="faq-question">
+              <div class="question-text">How do I get a refund if there's a problem with my order?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>If you encounter any issues with your order, please contact our support team immediately through the "Report a Problem" option in your order details. For orders that haven't been prepared yet, you can cancel directly in the app. For disputes after delivery, our team will review your case and process appropriate refunds within 2-3 business days.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Delivery section -->
+      <section class="faq-section" data-category="delivery">
+        <h2 class="section-title">Delivery</h2>
+        
+        <div class="faq-accordion">
+          <div class="faq-item" data-category="delivery">
+            <div class="faq-question">
+              <div class="question-text">How long does delivery take?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Delivery times vary depending on your location on campus, the vendor's preparation time, and current demand. Typically, orders are delivered within 15-30 minutes after the vendor accepts your order. During peak hours (lunch and dinner times), deliveries may take slightly longer. You can track your order status in real-time through the app.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="delivery">
+            <div class="faq-question">
+              <div class="question-text">Which areas do you deliver to?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>SapaSpots currently delivers to all areas within Makerere University campus, including all halls of residence, academic buildings, and common areas. We're planning to expand to neighboring areas soon. You can verify delivery availability to your specific location during checkout.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="delivery">
+            <div class="faq-question">
+              <div class="question-text">Is there a delivery fee?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes, a small delivery fee is applied to each order, which varies based on the distance between the vendor and your delivery location. The exact fee will be displayed during checkout before you confirm your order. We occasionally run promotions with free delivery, so keep an eye out for these special offers!</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="delivery">
+            <div class="faq-question">
+              <div class="question-text">Can I pick up my order instead of having it delivered?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes, self-pickup is available for most vendors. When placing your order, simply select the "Pickup" option instead of delivery. You'll receive a notification when your order is ready for pickup, and you can collect it directly from the vendor's location.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Account section -->
+      <section class="faq-section" data-category="account">
+        <h2 class="section-title">Account & App</h2>
+        
+        <div class="faq-accordion">
+          <div class="faq-item" data-category="account">
+            <div class="faq-question">
+              <div class="question-text">How do I create an account?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Creating an account is simple! Click the "Sign In" button on the top right, then choose "Create Account". You can sign up using your university email, Google account, or manually enter your details. Verify your email address, complete your profile with delivery information, and you're ready to start ordering!</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="account">
+            <div class="faq-question">
+              <div class="question-text">How do I reset my password?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>If you've forgotten your password, click "Sign In" and then select "Forgot Password". Enter your email address, and we'll send you a password reset link. Follow the instructions in the email to create a new password. If you don't receive the email, check your spam folder or contact our support team for assistance.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="faq-item" data-category="account">
+            <div class="faq-question">
+              <div class="question-text">Is my personal information secure?</div>
+              <div class="question-icon"></div>
+            </div>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>We take your privacy very seriously. SapaSpots uses industry-standard encryption and security measures to protect your personal information. We never share your details with third parties without your consent, and our payment processing is completely secure. You can review our full Privacy Policy for more details on how we handle your data.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Contact CTA -->
+      <div class="contact-cta">
+        <h2 class="cta-title">Still have questions?</h2>
+        <p class="cta-text">If you couldn't find the answer to your question, our team is here to help. Reach out to us and we'll get back to you as soon as possible.</p>
+        <a href="contact-us.html" class="contact-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          Contact Us
+        </a>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer will be loaded here -->
+  <div id="footer-container"></div>
+  
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // FAQ Accordion functionality
+      const faqItems = document.querySelectorAll('.faq-item');
+      
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        
+        question.addEventListener('click', () => {
+          // Toggle active class
+          item.classList.toggle('active');
+        });
+      });
+      
+      // Category filtering
+      const categoryButtons = document.querySelectorAll('.category-btn');
+      const faqSections = document.querySelectorAll('.faq-section');
+      
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Remove active class from all buttons
+          categoryButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // Add active class to clicked button
+          button.classList.add('active');
+          
+          const category = button.dataset.category;
+          
+          // Show/hide sections based on category
+          if (category === 'all') {
+            faqSections.forEach(section => section.style.display = 'block');
+          } else {
+            faqSections.forEach(section => {
+              if (section.dataset.category === category) {
+                section.style.display = 'block';
+              } else {
+                section.style.display = 'none';
+              }
+            });
+          }
+          
+          // Reset search
+          document.getElementById('faq-search-input').value = '';
+          document.getElementById('faq-not-found').style.display = 'none';
+          
+          // Show all items within visible sections
+          document.querySelectorAll('.faq-item').forEach(item => {
+            item.style.display = 'block';
+          });
+        });
+      });
+      
+      // Search functionality
+      const searchInput = document.getElementById('faq-search-input');
+      const notFoundMessage = document.getElementById('faq-not-found');
+      
+      searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let foundItems = 0;
+        
+        // Show all sections for search
+        faqSections.forEach(section => section.style.display = 'block');
+        
+        // Filter items based on search term
+        faqItems.forEach(item => {
+          const questionText = item.querySelector('.question-text').textContent.toLowerCase();
+          const answerText = item.querySelector('.answer-content').textContent.toLowerCase();
+          
+          if (questionText.includes(searchTerm) || answerText.includes(searchTerm)) {
+            item.style.display = 'block';
+            foundItems++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        // Show/hide not found message
+        if (foundItems === 0 && searchTerm !== '') {
+          notFoundMessage.style.display = 'block';
+        } else {
+          notFoundMessage.style.display = 'none';
+        }
+        
+        // Reset category buttons
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector('[data-category="all"]').classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html> 

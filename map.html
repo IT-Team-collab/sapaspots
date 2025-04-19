@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Map - SapaSpots</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
+  
+  <style>
+    /* Map page styles */
+    .page-header {
+      padding: 2rem 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      margin: 1.5rem auto;
+      max-width: 1200px;
+    }
+    
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 1rem;
+    }
+    
+    .page-description {
+      color: #6c757d;
+      margin-bottom: 0;
+      max-width: 700px;
+    }
+    
+    .map-container {
+      max-width: 1200px;
+      margin: 0 auto 3rem;
+      padding: 0 1.5rem;
+    }
+    
+    #map {
+      height: 500px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+    }
+    
+    .map-legend {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #495057;
+      margin-right: 1rem;
+    }
+    
+    .legend-pin {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .pin-open {
+      background-color: #28a745;
+    }
+    
+    .pin-closed {
+      background-color: #dc3545;
+    }
+    
+    /* Custom pin popup styles */
+    .custom-popup {
+      text-align: center;
+    }
+    
+    .vendor-popup-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 0.25rem;
+    }
+    
+    .vendor-popup-status {
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 0.75rem;
+    }
+    
+    .status-open {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-closed {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .vendor-popup-link {
+      background-color: #0066cc;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: inline-block;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    
+    .vendor-popup-link:hover {
+      background-color: #0052a3;
+    }
+    
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      padding: 0.25rem;
+    }
+    
+    .leaflet-popup-content {
+      margin: 0.75rem 1rem;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .page-header {
+        padding: 1.5rem 1rem;
+        margin: 1rem;
+      }
+      
+      .map-container {
+        padding: 0 1rem;
+      }
+      
+      #map {
+        height: 400px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #map {
+        height: 350px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-container"></div>
+  
+  <main>
+    <!-- Page header -->
+    <div class="page-header">
+      <h1 class="page-title">Campus Food Map</h1>
+      <p class="page-description">Discover food vendors around Makerere University campus. Click on pins to view details and menus.</p>
+    </div>
+    
+    <!-- Map container -->
+    <div class="map-container">
+      <div id="map"></div>
+      
+      <div class="map-legend">
+        <div class="legend-item">
+          <div class="legend-pin pin-open"></div>
+          <span>Open Vendor</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-pin pin-closed"></div>
+          <span>Closed Vendor</span>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer will be loaded here -->
+  <div id="footer-container"></div>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+  
+  <script src="localstorage-utils.js"></script>
+  <script src="script.js"></script>
+  <script src="realtime-sync.js"></script>
+  <script>
+    // Makerere University coordinates
+    const MAKERERE_COORDS = [0.3326, 32.5684]; // Latitude, Longitude
+    const DEFAULT_ZOOM = 16;
+    
+    // Initialize map
+    let map;
+    let vendorMarkers = [];
+    
+    function initMap() {
+      // Create map centered at Makerere University
+      map = L.map('map').setView(MAKERERE_COORDS, DEFAULT_ZOOM);
+      
+      // Add OpenStreetMap tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
+      
+      // Load vendors and add pins
+      loadVendors();
+    }
+    
+    // Load vendors from localStorage
+    function loadVendors() {
+      const vendors = JSON.parse(localStorage.getItem('vendors')) || [];
+      
+      // Clear existing markers
+      vendorMarkers.forEach(marker => map.removeLayer(marker));
+      vendorMarkers = [];
+      
+      // Generate coordinates for vendors (since we don't have real coordinates)
+      const vendorsWithCoords = assignCoordinates(vendors);
+      
+      // Add vendor pins to map
+      vendorsWithCoords.forEach(vendor => {
+        addVendorPin(vendor);
+      });
+    }
+    
+    // Assign coordinates to vendors (for demo purposes)
+    function assignCoordinates(vendors) {
+      // In a real application, these would come from your database
+      // For demo, we'll generate points around Makerere University
+      return vendors.map((vendor, index) => {
+        // Create variation in coordinates to spread vendors around campus
+        const latOffset = (Math.random() - 0.5) * 0.006;
+        const lngOffset = (Math.random() - 0.5) * 0.008;
+        
+        return {
+          ...vendor,
+          coordinates: [
+            MAKERERE_COORDS[0] + latOffset,
+            MAKERERE_COORDS[1] + lngOffset
+          ]
+        };
+      });
+    }
+    
+    // Add a vendor pin to the map
+    function addVendorPin(vendor) {
+      // Create custom pin icon based on vendor status
+      const icon = L.divIcon({
+        className: 'custom-vendor-pin',
+        html: `<div style="background-color: ${vendor.open ? '#28a745' : '#dc3545'}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -11]
+      });
+      
+      // Add marker to map
+      const marker = L.marker(vendor.coordinates, { icon }).addTo(map);
+      
+      // Create popup content
+      const popupContent = `
+        <div class="custom-popup">
+          <div class="vendor-popup-name">${vendor.name}</div>
+          <div class="vendor-popup-status ${vendor.open ? 'status-open' : 'status-closed'}">
+            ${vendor.open ? 'OPEN' : 'CLOSED'}
+          </div>
+          <a href="vendor.html?id=${vendor.id || vendor.vendorId}" class="vendor-popup-link">View Menu</a>
+        </div>
+      `;
+      
+      // Bind popup to marker
+      marker.bindPopup(popupContent);
+      
+      // Add marker to array for later reference
+      vendorMarkers.push(marker);
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize map
+      initMap();
+    });
+    
+    // For realtime sync - implement refresh function
+    function refreshMapUI() {
+      loadVendors();
+    }
+  </script>
+</body>
+</html> 

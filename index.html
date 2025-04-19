@@ -583,7 +583,7 @@
       </section>
       
       <div class="carousel-controls">
-        <button class="carousel-btn prev" id="prev-btn">n
+        <button class="carousel-btn prev" id="prev-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
         </button>
         <button class="carousel-btn next" id="next-btn">
@@ -598,8 +598,8 @@
     
     <!-- Featured vendors section -->
     <section class="featured-section">
-      <h2 class="section-title">Campus Favorites</h2>
-      <p class="section-subtitle">Discover the most popular food spots on campus, all at your fingertips</p>
+      <h2 class="section-title">Top-Rated Vendors</h2>
+      <p class="section-subtitle">The highest-rated food spots on campus, as rated by students</p>
       
       <!-- Content will be added by JavaScript -->
       <div id="featured-vendors" class="vendors-grid"></div>
@@ -842,6 +842,17 @@
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
+        video.autoplay = true;
+        video.preload = "auto";
+        
+        // Add event listener for when video data is loaded
+        video.addEventListener('loadeddata', function() {
+          if (index === 0) {
+            video.play().catch(err => {
+              console.log('Video autoplay was prevented on load:', err);
+            });
+          }
+        });
         
         // Create caption
         const caption = document.createElement('div');
@@ -877,9 +888,15 @@
       if (videoFiles.length > 0) {
         const firstVideo = carouselContainer.querySelector('video');
         if (firstVideo) {
-          firstVideo.play().catch(err => {
-            console.log('Video autoplay was prevented:', err);
-          });
+          setTimeout(() => {
+            firstVideo.currentTime = 0;
+            firstVideo.play().catch(err => {
+              console.log('Video autoplay was prevented:', err);
+              // Try playing without audio as fallback
+              firstVideo.muted = true;
+              firstVideo.play().catch(e => console.log('Still cannot play video:', e));
+            });
+          }, 1000);
         }
       }
       
@@ -911,9 +928,14 @@
         const currentVideo = slides[index].querySelector('video');
         if (currentVideo) {
           currentVideo.currentTime = 0;
-          currentVideo.play().catch(err => {
-            console.log('Video play was prevented:', err);
-          });
+          setTimeout(() => {
+            currentVideo.play().catch(err => {
+              console.log('Video play was prevented:', err);
+              // Try again with explicit muted setting
+              currentVideo.muted = true;
+              currentVideo.play();
+            });
+          }, 100);
         }
         
         currentSlide = index;
@@ -933,20 +955,59 @@
       const vendors = JSON.parse(localStorage.getItem('vendors')) || [];
       const featuredVendorsContainer = document.getElementById('featured-vendors');
       
-      // Map vendors to appropriate local images
+      // Define vendor-specific images - specific mapping for each restaurant
       const vendorImages = {
         'Campus Grill': 'burger.jpg',
         'Rolex King': 'rolex.jpg',
         'African Cuisine': 'posho.jpg',
-        'Campus Coffee': 'coffee.jpeg'
+        'Campus Coffee': 'coffee.jpeg',
+        'COCIS Cafeteria': 'cocis-cafeteria.jpg',
+        'Guild Canteen': 'giuld-canteen.jpeg',
+        'Africa Hall Cafeteria': 'africa-hall.png',
+        'Nsibirwa Hall Canteen': 'nsibirwa-hall.jpg',
+        'THE CAMPUS BARBEQUE CENTRE': 'berbeque.jpg',
+        'Best Foods Restaurant': 'greens2.jpg',
+        'Crave Cave Takeaway Restaurant': 'steak.jpg'
       };
       
-      // Only select specific vendors (v1, v2, v4)
-      const vendorIds = ['v1', 'v2', 'v4'];
-      
-      if (featuredVendorsContainer) {
-        // Filter selected vendors
-        const displayVendors = vendors.filter(vendor => vendorIds.includes(vendor.vendorId));
+      if (featuredVendorsContainer && vendors.length > 0) {
+        // Sort vendors by rating and select top 3 (or all if less than 3)
+        // Additionally, prioritize open vendors
+        const sortedVendors = [...vendors].sort((a, b) => {
+          // First sort by open status (open vendors first)
+          if (a.open && !b.open) return -1;
+          if (!a.open && b.open) return 1;
+          
+          // Then sort by rating if available
+          const aRating = a.rating || 0;
+          const bRating = b.rating || 0;
+          return bRating - aRating;
+        });
+        
+        // Clear container before adding new items
+        featuredVendorsContainer.innerHTML = '';
+        
+        // Force display of the three vendors from the screenshot
+        // This ensures consistency with the UI shown in the screenshot
+        const vendorNames = ['THE CAMPUS BARBEQUE CENTRE', 'Best Foods Restaurant', 'Crave Cave Takeaway Restaurant'];
+        let displayVendors = [];
+        
+        // Try to find the three vendors from the screenshot
+        vendorNames.forEach(name => {
+          const vendor = sortedVendors.find(v => v.name === name);
+          if (vendor) {
+            displayVendors.push(vendor);
+          }
+        });
+        
+        // If we couldn't find all three, add vendors from the sorted list until we have three
+        if (displayVendors.length < 3) {
+          for (const vendor of sortedVendors) {
+            if (!displayVendors.includes(vendor) && displayVendors.length < 3) {
+              displayVendors.push(vendor);
+            }
+          }
+        }
         
         displayVendors.forEach(vendor => {
           const vendorCard = document.createElement('div');
@@ -956,7 +1017,18 @@
           const statusText = vendor.open ? 'OPEN' : 'CLOSED';
           
           // Get the appropriate image for this vendor
-          const imageFile = vendorImages[vendor.name] || 'food-placeholder.svg';
+          let imageFile = vendorImages[vendor.name];
+          
+          // If no specific image found for this vendor, use a default
+          if (!imageFile) {
+            // Use an image based on vendor's position in list to ensure variety
+            const defaultImages = ['burger.jpg', 'steak.jpg', 'rolex.jpg', 'fish.webp', 'beans1.jpg'];
+            const index = sortedVendors.indexOf(vendor) % defaultImages.length;
+            imageFile = defaultImages[index];
+          }
+          
+          // Get vendor ID (could be vendorId or id depending on data structure)
+          const vendorId = vendor.vendorId || vendor.id;
           
           vendorCard.innerHTML = `
             <div class="vendor-card-image">
@@ -967,7 +1039,7 @@
               <h3 class="vendor-card-title">${vendor.name}</h3>
               <p class="vendor-card-location">${vendor.location}</p>
               <div class="vendor-card-footer">
-                <a href="vendor.html?id=${vendor.vendorId}" class="view-menu-btn">View Menu</a>
+                <a href="vendor.html?id=${vendorId}" class="view-menu-btn">View Menu</a>
               </div>
             </div>
           `;

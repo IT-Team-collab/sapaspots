@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details - SapaSpots</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    /* Order details page styles */
+    .page-header {
+      padding: 2rem 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      margin: 1.5rem auto;
+      max-width: 1000px;
+    }
+    
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 1rem;
+    }
+    
+    .page-description {
+      color: #6c757d;
+      margin-bottom: 0;
+      max-width: 700px;
+    }
+    
+    .order-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto 3rem;
+      padding: 0 1.5rem;
+    }
+    
+    .order-summary {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .summary-header {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .summary-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #212529;
+      margin: 0 0 0.5rem;
+    }
+    
+    .vendor-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #495057;
+      font-size: 0.9rem;
+    }
+    
+    .vendor-info svg {
+      width: 16px;
+      height: 16px;
+      color: #6c757d;
+    }
+    
+    .tray-items {
+      margin-bottom: 1.5rem;
+    }
+    
+    .tray-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f1f3f5;
+    }
+    
+    .item-quantity {
+      min-width: 2rem;
+      text-align: center;
+      color: #495057;
+      font-weight: 500;
+      padding-top: 0.25rem;
+    }
+    
+    .item-details {
+      flex: 1;
+      padding: 0 0.5rem;
+    }
+    
+    .item-name {
+      font-weight: 500;
+      color: #212529;
+      margin: 0 0 0.25rem;
+    }
+    
+    .item-price {
+      color: #495057;
+      font-size: 0.9rem;
+    }
+    
+    .item-total {
+      text-align: right;
+      color: #495057;
+      font-weight: 500;
+      padding-top: 0.25rem;
+      min-width: 4.5rem;
+    }
+    
+    .summary-totals {
+      padding-top: 1rem;
+    }
+    
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      color: #495057;
+    }
+    
+    .grand-total-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e9ecef;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #212529;
+    }
+    
+    .order-form {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #212529;
+      margin: 0 0 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #495057;
+      margin: 0 0 1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #495057;
+      font-size: 0.95rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+    
+    .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 1rem;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 16px;
+      transition: all 0.2s ease;
+    }
+    
+    .form-select:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+    
+    .form-textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 1rem;
+      min-height: 100px;
+      resize: vertical;
+      transition: all 0.2s ease;
+    }
+    
+    .form-textarea:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+    
+    .form-check {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-check-input {
+      margin-right: 0.5rem;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .form-check-label {
+      font-size: 0.95rem;
+      color: #495057;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1.5rem;
+    }
+    
+    .submit-btn:hover {
+      background-color: #0052a3;
+    }
+    
+    .submit-btn:disabled {
+      background-color: #a7c5e3;
+      cursor: not-allowed;
+    }
+    
+    .empty-tray {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #6c757d;
+    }
+    
+    .empty-tray svg {
+      width: 64px;
+      height: 64px;
+      color: #adb5bd;
+      margin-bottom: 1rem;
+    }
+    
+    .empty-tray-message {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .browse-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.25rem;
+      background-color: #0066cc;
+      color: white;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      gap: 0.5rem;
+    }
+    
+    .browse-btn:hover {
+      background-color: #0052a3;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .order-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .page-header {
+        padding: 1.5rem 1rem;
+        margin: 1rem;
+      }
+      
+      .order-container {
+        padding: 0 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-container"></div>
+  
+  <main>
+    <!-- Page header -->
+    <div class="page-header">
+      <h1 class="page-title">Order Details</h1>
+      <p class="page-description">Complete your order information and confirm your delivery details.</p>
+    </div>
+    
+    <!-- Order container -->
+    <div class="order-container" id="order-container">
+      <!-- Order summary -->
+      <div class="order-summary">
+        <div class="summary-header">
+          <h2 class="summary-title">Order Summary</h2>
+          <div class="vendor-info" id="vendor-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span id="vendor-name">Loading vendor...</span>
+          </div>
+        </div>
+        
+        <div class="tray-items" id="tray-items">
+          <!-- Tray items will be populated with JavaScript -->
+        </div>
+        
+        <div class="summary-totals">
+          <div class="total-row">
+            <span>Subtotal</span>
+            <span id="subtotal">UGX 0</span>
+          </div>
+          <div class="total-row">
+            <span>Delivery Fee</span>
+            <span id="delivery-fee">UGX 2,000</span>
+          </div>
+          <div class="grand-total-row">
+            <span>Total</span>
+            <span id="grand-total">UGX 0</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Order form -->
+      <div class="order-form">
+        <h2 class="form-title">Delivery Information</h2>
+        <form id="order-form">
+          <div class="form-section">
+            <h3 class="section-title">Contact Details</h3>
+            <div class="form-group">
+              <label for="name" class="form-label">Full Name</label>
+              <input type="text" id="name" name="name" class="form-input" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="tel" id="phone" name="phone" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="email" class="form-label">Email (optional)</label>
+                <input type="email" id="email" name="email" class="form-input">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-section">
+            <h3 class="section-title">Delivery Location</h3>
+            <div class="form-group">
+              <label for="hall" class="form-label">Hall/Building</label>
+              <select id="hall" name="hall" class="form-select" required>
+                <option value="">Select a hall</option>
+                <option value="University Hall">University Hall</option>
+                <option value="Africa Hall">Africa Hall</option>
+                <option value="Mary Stuart Hall">Mary Stuart Hall</option>
+                <option value="Nsibirwa Hall">Nsibirwa Hall</option>
+                <option value="Complex Hall">Complex Hall</option>
+                <option value="Lumumba Hall">Lumumba Hall</option>
+                <option value="Mitchell Hall">Mitchell Hall</option>
+                <option value="Livingstone Hall">Livingstone Hall</option>
+                <option value="MUBS Nakawa">MUBS Nakawa</option>
+                <option value="COCIS Building">COCIS Building</option>
+                <option value="CEDAT Building">CEDAT Building</option>
+                <option value="Other">Other (specify in notes)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="room" class="form-label">Room/Office Number</label>
+              <input type="text" id="room" name="room" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="notes" class="form-label">Delivery Notes (optional)</label>
+              <textarea id="notes" name="notes" class="form-textarea" placeholder="Any additional instructions for delivery..."></textarea>
+            </div>
+          </div>
+          
+          <div class="form-section">
+            <h3 class="section-title">Payment</h3>
+            <div class="form-check">
+              <input type="radio" id="payment-cash" name="payment" value="cash" class="form-check-input" checked>
+              <label for="payment-cash" class="form-check-label">Cash on Delivery</label>
+            </div>
+            <div class="form-check">
+              <input type="radio" id="payment-mobile" name="payment" value="mobile" class="form-check-input">
+              <label for="payment-mobile" class="form-check-label">Mobile Money (Pay on confirmation)</label>
+            </div>
+          </div>
+          
+          <button type="submit" id="submit-order" class="submit-btn">Place Order</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Empty tray template (will be shown if tray is empty) -->
+  <template id="empty-tray-template">
+    <div class="empty-tray">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3h18v18H3zM12 8v8m-4-4h8"></path>
+      </svg>
+      <div class="empty-tray-message">Your tray is empty</div>
+      <a href="vendors.html" class="browse-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        Browse Vendors
+      </a>
+    </div>
+  </template>
+  
+  <!-- Footer will be loaded here -->
+  <div id="footer-container"></div>
+  
+  <script src="localstorage-utils.js"></script>
+  <script src="script.js"></script>
+  <script src="realtime-sync.js"></script>
+  <script>
+    // Format price in UGX
+    function formatPrice(price) {
+      return 'UGX ' + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    
+    // Get Vendor Information
+    function getVendorInfo(vendorId) {
+      const vendors = JSON.parse(localStorage.getItem('vendors')) || [];
+      return vendors.find(vendor => vendor.id === vendorId || vendor.vendorId === vendorId);
+    }
+    
+    // Load tray items and calculate totals
+    function loadTrayItems() {
+      const trayItems = getTray();
+      const trayItemsContainer = document.getElementById('tray-items');
+      
+      // If tray is empty, show empty state
+      if (!trayItems || trayItems.length === 0) {
+        const emptyTemplate = document.getElementById('empty-tray-template');
+        const emptyContent = emptyTemplate.content.cloneNode(true);
+        
+        const orderContainer = document.getElementById('order-container');
+        orderContainer.innerHTML = '';
+        orderContainer.appendChild(emptyContent);
+        return;
+      }
+      
+      // Get vendor ID from the first item (all items should be from same vendor)
+      const vendorId = trayItems[0].vendorId;
+      const vendor = getVendorInfo(vendorId);
+      
+      // Update vendor info
+      if (vendor) {
+        document.getElementById('vendor-name').textContent = vendor.name;
+      }
+      
+      // Clear tray items container
+      trayItemsContainer.innerHTML = '';
+      
+      // Calculate subtotal
+      let subtotal = 0;
+      
+      // Add tray items to the container
+      trayItems.forEach(item => {
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
+        
+        const trayItem = document.createElement('div');
+        trayItem.className = 'tray-item';
+        trayItem.innerHTML = `
+          <div class="item-quantity">${item.qty}x</div>
+          <div class="item-details">
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">${formatPrice(item.price)} each</div>
+          </div>
+          <div class="item-total">${formatPrice(itemTotal)}</div>
+        `;
+        
+        trayItemsContainer.appendChild(trayItem);
+      });
+      
+      // Update totals
+      const deliveryFee = 2000; // Fixed delivery fee
+      const total = subtotal + deliveryFee;
+      
+      document.getElementById('subtotal').textContent = formatPrice(subtotal);
+      document.getElementById('delivery-fee').textContent = formatPrice(deliveryFee);
+      document.getElementById('grand-total').textContent = formatPrice(total);
+    }
+    
+    // Prefill form with user profile data
+    function prefillFormWithUserData() {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+      
+      // Prefill form fields if data exists
+      if (userProfile.name) {
+        document.getElementById('name').value = userProfile.name;
+      }
+      
+      if (userProfile.phone) {
+        document.getElementById('phone').value = userProfile.phone;
+      }
+      
+      if (userProfile.email) {
+        document.getElementById('email').value = userProfile.email;
+      }
+      
+      if (userProfile.hall) {
+        document.getElementById('hall').value = userProfile.hall;
+      }
+      
+      if (userProfile.room) {
+        document.getElementById('room').value = userProfile.room;
+      }
+    }
+    
+    // Generate order ID based on timestamp
+    function generateOrderId() {
+      const timestamp = new Date().getTime();
+      const random = Math.floor(Math.random() * 1000);
+      return `ORD-${timestamp}-${random}`;
+    }
+    
+    // Handle form submission
+    function handleOrderSubmission(event) {
+      event.preventDefault();
+      
+      // Get tray items
+      const trayItems = getTray();
+      
+      // If tray is empty, don't proceed
+      if (!trayItems || trayItems.length === 0) {
+        alert('Your tray is empty. Please add items before placing an order.');
+        return;
+      }
+      
+      // Get form data
+      const formData = new FormData(event.target);
+      const orderData = {
+        orderId: generateOrderId(),
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+        customer: {
+          name: formData.get('name'),
+          phone: formData.get('phone'),
+          email: formData.get('email'),
+          hall: formData.get('hall'),
+          room: formData.get('room'),
+          notes: formData.get('notes')
+        },
+        paymentMethod: formData.get('payment'),
+        items: trayItems,
+        vendorId: trayItems[0].vendorId,
+        subtotal: calculateSubtotal(trayItems),
+        deliveryFee: 2000,
+        total: calculateSubtotal(trayItems) + 2000
+      };
+      
+      // Save user location data to profile if not already saved
+      saveUserLocationData(formData);
+      
+      // Save order to localStorage
+      addOrder(orderData);
+      
+      // Clear tray
+      clearTray();
+      
+      // Show success message
+      alert('Your order has been placed successfully!');
+      
+      // Redirect to student dashboard
+      window.location.href = 'student-dashboard.html';
+    }
+    
+    // Calculate subtotal
+    function calculateSubtotal(items) {
+      return items.reduce((total, item) => total + (item.price * item.qty), 0);
+    }
+    
+    // Save user location data to profile
+    function saveUserLocationData(formData) {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+      
+      // Only update if the fields were not already filled
+      if (!userProfile.phone) {
+        userProfile.phone = formData.get('phone');
+      }
+      
+      if (!userProfile.hall) {
+        userProfile.hall = formData.get('hall');
+      }
+      
+      if (!userProfile.room) {
+        userProfile.room = formData.get('room');
+      }
+      
+      localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTrayItems();
+      prefillFormWithUserData();
+      
+      // Add event listener for form submission
+      const orderForm = document.getElementById('order-form');
+      if (orderForm) {
+        orderForm.addEventListener('submit', handleOrderSubmission);
+      }
+    });
+  </script>
+</body>
+</html> 
