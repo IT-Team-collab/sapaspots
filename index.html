@@ -1,957 +1,981 @@
-<?php
-include 'header.php';
-
-// Check if user just logged in (using session)
-$freshLogin = false;
-if (isset($_SESSION['fresh_login']) && $_SESSION['fresh_login'] === true) {
-    $freshLogin = true;
-    // Reset the flag
-    $_SESSION['fresh_login'] = false;
-}
-
-// Get user profile
-$userProfile = null;
-if (isset($_COOKIE['userProfile'])) {
-    $userProfile = json_decode($_COOKIE['userProfile'], true);
-}
-?>
-
-<style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SapaSpots - Campus Food Ordering</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
     /* Hero section styles */
-    .hero-section {
-        position: relative;
-        overflow: hidden;
-        padding: 0;
-        height: 450px;
-        border-radius: 16px;
-        margin-bottom: 30px;
+    .hero {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 3rem 2rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 5;
+      color: white;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
     }
     
-    .hero-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 40px;
-        z-index: 2;
+    .welcome-message {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s forwards;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
-    .welcome-alert {
-        position: absolute;
-        top: 20px;
-        left: 0;
-        right: 0;
-        margin: 0 auto;
-        width: 90%;
-        max-width: 600px;
-        background-color: var(--primary-color);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 6px 20px rgba(230, 57, 70, 0.3);
-        z-index: 10;
-        animation: fadeInDown 0.8s ease forwards;
+    .welcome-subtitle {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 2.5rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s 0.2s forwards;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
     
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .welcome-alert i {
-        font-size: 1.8rem;
-        margin-right: 15px;
-    }
-    
-    .welcome-alert-content {
-        flex: 1;
-    }
-    
-    .welcome-alert h3 {
-        margin: 0 0 5px 0;
-        font-size: 1.2rem;
-    }
-    
-    .welcome-alert p {
-        margin: 0;
-        font-size: 0.95rem;
-        opacity: 0.9;
-    }
-    
-    .close-alert {
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-        font-size: 1.2rem;
-        opacity: 0.7;
-        transition: opacity 0.3s ease;
-    }
-    
-    .close-alert:hover {
+    @keyframes fadeInUp {
+      to {
         opacity: 1;
+        transform: translateY(0);
+      }
     }
     
-    .hero-content {
-        color: white;
-        max-width: 700px;
-    }
-    
-    .hero-title {
-        font-size: 2.5rem;
-        margin: 0 0 10px 0;
-        font-weight: 700;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-    }
-    
-    .hero-subtitle {
-        font-size: 1.2rem;
-        margin: 0 0 30px 0;
-        font-weight: 400;
-        opacity: 0.9;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    
-    /* Video carousel */
-    .video-carousel {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-    }
-    
-    .carousel-video {
-        position: absolute;
-        object-fit: cover;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transition: opacity 1.5s ease;
-    }
-    
-    .carousel-video.active {
-        opacity: 1;
-    }
-    
-    /* CTA buttons */
     .cta-buttons {
-        display: flex;
-        gap: 15px;
-        margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s 0.4s forwards;
     }
     
     .cta-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 14px 24px;
-        border-radius: 30px;
-        font-weight: 600;
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.875rem 1.5rem;
+      background-color: #0066cc;
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      gap: 0.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     
-    .cta-primary {
-        background-color: var(--primary-color);
-        color: white;
-        box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+    .cta-btn:hover {
+      background-color: #0052a3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
     }
     
-    .cta-primary:hover {
-        background-color: #d02c39;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+    .cta-btn.secondary {
+      background-color: rgba(255, 255, 255, 0.85);
+      color: #0066cc;
+      border: none;
     }
     
-    .cta-secondary {
-        background-color: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(5px);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+    .cta-btn.secondary:hover {
+      background-color: rgba(255, 255, 255, 0.95);
     }
     
-    .cta-secondary:hover {
-        background-color: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
+    .cta-btn svg {
+      width: 18px;
+      height: 18px;
     }
     
-    .cta-tertiary {
-        background-color: var(--secondary-color);
-        color: white;
-        box-shadow: 0 4px 15px rgba(29, 53, 87, 0.3);
+    /* Video carousel styles */
+    .video-carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      margin: 2rem auto;
+      max-width: 1200px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      aspect-ratio: 16/9;
+      background-color: #000;
     }
     
-    .cta-tertiary:hover {
-        background-color: #152842;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(29, 53, 87, 0.4);
+    .carousel-container {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      height: 100%;
     }
     
-    /* Features section */
-    .features-section {
-        padding: 30px 0;
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    
+    .carousel-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+    
+    .carousel-slide-caption {
+      display: none; /* Hide the original captions */
+    }
+    
+    .carousel-controls {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+      z-index: 10;
+      padding: 0 1rem;
+    }
+    
+    .carousel-btn {
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .carousel-btn:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .carousel-dots {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    
+    .carousel-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .carousel-dot.active {
+      background-color: white;
+      transform: scale(1.2);
+    }
+    
+    /* Featured vendors section */
+    .featured-section {
+      padding: 3rem 2rem;
+      margin: 2rem auto;
+      max-width: 1200px;
     }
     
     .section-title {
-        font-size: 1.8rem;
-        color: var(--secondary-color);
-        margin-bottom: 30px;
-        text-align: center;
-        position: relative;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 1.5rem;
+      text-align: center;
     }
     
-    .section-title:after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 3px;
-        background-color: var(--primary-color);
-        border-radius: 3px;
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: #6c757d;
+      margin-bottom: 2rem;
+      text-align: center;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
     }
     
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 25px;
-        margin-top: 30px;
-    }
-    
-    .feature-card {
-        background-color: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-        text-align: center;
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    }
-    
-    .feature-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background-color: rgba(230, 57, 70, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px;
-    }
-    
-    .feature-icon i {
-        font-size: 2rem;
-        color: var(--primary-color);
-    }
-    
-    .feature-title {
-        font-size: 1.2rem;
-        color: var(--dark-color);
-        margin-bottom: 10px;
-    }
-    
-    .feature-desc {
-        color: #666;
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-    
-    /* Responsive adjustments */
-    @media screen and (max-width: 768px) {
-        .hero-section {
-            height: 500px;
-        }
-        
-        .hero-overlay {
-            padding: 30px;
-        }
-        
-        .hero-title {
-            font-size: 2rem;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.1rem;
-        }
-        
-        .cta-buttons {
-            flex-direction: column;
-        }
-        
-        .welcome-alert {
-            width: 85%;
-            padding: 12px 15px;
-        }
-        
-        .welcome-alert h3 {
-            font-size: 1.1rem;
-        }
-        
-        .welcome-alert p {
-            font-size: 0.9rem;
-        }
-    }
-    
-    @media screen and (max-width: 480px) {
-        .hero-section {
-            height: 450px;
-            border-radius: 12px;
-        }
-        
-        .hero-overlay {
-            padding: 25px;
-        }
-        
-        .hero-title {
-            font-size: 1.8rem;
-        }
-        
-        .hero-subtitle {
-            font-size: 1rem;
-            margin-bottom: 20px;
-        }
-        
-        .feature-card {
-            padding: 20px;
-        }
-    }
-    
-    /* How It Works Section */
-    .how-it-works-section {
-        padding: 60px 0;
-        background-color: #f9f9f9;
-        border-radius: 16px;
-        margin: 40px 0;
-    }
-    
-    .steps-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 40px;
-        gap: 30px;
-    }
-    
-    .step-card {
-        flex: 1;
-        min-width: 250px;
-        max-width: 280px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .step-number {
-        background-color: var(--primary-color);
-        color: white;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
-    }
-    
-    .step-icon {
-        font-size: 3rem;
-        color: var(--secondary-color);
-        margin-bottom: 15px;
-    }
-    
-    .step-title {
-        font-size: 1.2rem;
-        color: var(--dark-color);
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
-    
-    .step-desc {
-        color: #666;
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-    
-    /* Popular Vendors Section */
-    .popular-vendors-section {
-        padding: 40px 0;
-    }
-    
-    .vendors-slider {
-        margin-top: 30px;
-        display: flex;
-        overflow-x: auto;
-        padding: 10px 0 20px;
-        gap: 20px;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Firefox */
-    }
-    
-    .vendors-slider::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Edge */
+    .vendors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
     }
     
     .vendor-card {
-        min-width: 280px;
-        background-color: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-        cursor: pointer;
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
     
     .vendor-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     }
     
-    .vendor-image {
-        width: 100%;
-        height: 160px;
-        object-fit: cover;
+    .vendor-card-image {
+      position: relative;
+      height: 180px;
+      overflow: hidden;
     }
     
-    .vendor-info {
-        padding: 20px;
+    .vendor-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
     }
     
-    .vendor-name {
-        font-size: 1.2rem;
-        color: var(--secondary-color);
-        margin-bottom: 8px;
-        font-weight: 600;
-    }
-    
-    .vendor-location {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        color: #666;
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-    }
-    
-    .vendor-rating {
-        display: flex;
-        align-items: center;
-        gap: 3px;
-        margin-bottom: 15px;
-    }
-    
-    .rating-stars {
-        color: #f1c40f;
-        font-size: 0.9rem;
-    }
-    
-    .rating-count {
-        color: #888;
-        font-size: 0.85rem;
-    }
-    
-    .vendor-specialty {
-        font-size: 0.9rem;
-        color: #444;
+    .vendor-card:hover .vendor-card-image img {
+      transform: scale(1.05);
     }
     
     .vendor-status {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        margin-top: 10px;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
     }
     
-    .vendor-open {
-        background-color: #e8f5e9;
-        color: #4caf50;
+    .status-open {
+      background-color: #d4edda;
+      color: #155724;
     }
     
-    .vendor-closed {
-        background-color: #ffebee;
-        color: #f44336;
+    .status-closed {
+      background-color: #f8d7da;
+      color: #721c24;
     }
     
-    .slider-controls {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-top: 25px;
+    .vendor-card-content {
+      padding: 1.25rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
     
-    .slider-btn {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background-color: white;
-        border: 1px solid #ddd;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
+    .vendor-card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 0.5rem;
     }
     
-    .slider-btn:hover {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
+    .vendor-card-location {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
     }
     
-    /* Testimonials Section */
-    .testimonials-section {
-        padding: 60px 0;
-        background-color: var(--light-color);
-        border-radius: 16px;
-        margin: 40px 0;
+    .vendor-card-footer {
+      margin-top: auto;
+    }
+    
+    .view-menu-btn {
+      display: inline-block;
+      background-color: #0066cc;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    
+    .view-menu-btn:hover {
+      background-color: #0052a3;
+    }
+    
+    /* How it works section */
+    .how-it-works {
+      background-color: #f8f9fa;
+      padding: 4rem 2rem;
+      margin: 2rem auto;
+      max-width: 1200px;
+      border-radius: 12px;
+    }
+    
+    .steps-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    
+    .step-card {
+      text-align: center;
+      padding: 1.5rem;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .step-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      background-color: #0066cc;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+    }
+    
+    .step-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 1rem;
+    }
+    
+    .step-icon {
+      margin-bottom: 1.5rem;
+      color: #0066cc;
+    }
+    
+    .step-icon svg {
+      width: 50px;
+      height: 50px;
+    }
+    
+    .step-description {
+      color: #6c757d;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    /* Categories section */
+    .categories-section {
+      padding: 3rem 2rem;
+      margin: 2rem auto;
+      max-width: 1200px;
+    }
+    
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .category-card {
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+    
+    .category-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .category-icon {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f1f3f5;
+      border-radius: 50%;
+      margin-bottom: 1rem;
+      color: #0066cc;
+    }
+    
+    .category-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #212529;
+      margin-bottom: 0.25rem;
+    }
+    
+    .category-count {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+    
+    /* Testimonials section */
+    .testimonials {
+      background-color: #f8f9fa;
+      padding: 4rem 2rem;
+      margin: 2rem auto;
+      max-width: 1200px;
+      border-radius: 12px;
     }
     
     .testimonials-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 30px;
-        margin-top: 40px;
-        justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
     }
     
     .testimonial-card {
-        background-color: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-        max-width: 350px;
-        position: relative;
+      background-color: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      position: relative;
     }
     
-    .testimonial-card::before {
-        content: '"';
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        font-size: 5rem;
-        line-height: 1;
-        color: rgba(230, 57, 70, 0.1);
-        font-family: Georgia, serif;
-    }
-    
-    .testimonial-content {
-        font-style: italic;
-        color: #555;
-        margin-bottom: 20px;
-        position: relative;
-        z-index: 1;
+    .testimonial-quote {
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      font-style: italic;
+      color: #495057;
+      line-height: 1.6;
     }
     
     .testimonial-author {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+      display: flex;
+      align-items: center;
     }
     
-    .author-image {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid var(--primary-color);
+    .author-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 1rem;
     }
     
-    .author-info {
-        display: flex;
-        flex-direction: column;
+    .author-details {
+      display: flex;
+      flex-direction: column;
     }
     
     .author-name {
-        font-weight: 600;
-        color: var(--secondary-color);
-        font-size: 1.1rem;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 0.25rem;
     }
     
-    .author-title {
-        color: #777;
-        font-size: 0.9rem;
+    .author-info {
+      font-size: 0.9rem;
+      color: #6c757d;
     }
     
-    /* Responsive Adjustments */
-    @media screen and (max-width: 768px) {
-        .steps-container {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .testimonials-container {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .vendor-card {
-            min-width: 260px;
-        }
+    .quote-icon {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      color: #e9ecef;
+      opacity: 0.5;
     }
-</style>
-
-<main>
-    <!-- Hero Section with Video Carousel -->
-    <section class="hero-section">
-        <!-- Welcome Alert -->
-        <?php if ($freshLogin && $userProfile): ?>
-        <div class="welcome-alert" id="welcome-alert">
-            <i class="fas fa-hand-sparkles"></i>
-            <div class="welcome-alert-content">
-                <h3>Welcome back, <?php echo htmlspecialchars($userProfile['name']); ?>!</h3>
-                <p>Ready to discover delicious meals around campus?</p>
-            </div>
-            <button class="close-alert" onclick="document.getElementById('welcome-alert').style.display = 'none';">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <?php endif; ?>
+    
+    /* Additional responsive styles */
+    @media (max-width: 768px) {
+      .how-it-works,
+      .testimonials {
+        padding: 3rem 1.5rem;
+        margin: 1.5rem 1rem;
+      }
+      
+      .categories-section,
+      .featured-section {
+        padding: 2rem 1.5rem;
+        margin: 1.5rem 1rem;
+      }
+      
+      .step-title {
+        font-size: 1.2rem;
+      }
+      
+      .testimonial-quote {
+        font-size: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .how-it-works,
+      .testimonials {
+        padding: 2rem 1rem;
+        margin: 1rem;
+      }
+      
+      .categories-section,
+      .featured-section {
+        padding: 2rem 1rem;
+        margin: 1rem;
+      }
+      
+      .testimonials-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-container"></div>
+  
+  <main>
+    <!-- Video carousel with hero overlay -->
+    <div class="video-carousel">
+      <div class="carousel-container" id="video-carousel-container">
+        <!-- Videos will be added by JavaScript -->
+      </div>
+      
+      <!-- Hero section with welcome message and CTAs -->
+      <section class="hero">
+        <h1 class="welcome-message">Welcome to SapaSpots!</h1>
+        <p class="welcome-subtitle">Order delicious meals from your favorite campus vendors with just a few clicks. No more waiting in line or missing your favorite dishes!</p>
         
-        <!-- Video Carousel -->
-        <div class="video-carousel">
-            <video class="carousel-video active" autoplay muted>
-                <source src="burger.mp4" type="video/mp4">
-            </video>
-            <video class="carousel-video" muted>
-                <source src="frying.mp4" type="video/mp4">
-            </video>
-            <video class="carousel-video" muted>
-                <source src="cutting-bread.mp4" type="video/mp4">
-            </video>
-            <video class="carousel-video" muted>
-                <source src="pork-roasting.mp4" type="video/mp4">
-            </video>
+        <div class="cta-buttons">
+          <a href="vendors.html" class="cta-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3zM12 8v8m-4-4h8"></path></svg>
+            View Vendors
+          </a>
+          <a href="map.html" class="cta-btn secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"></circle><path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8z"></path></svg>
+            See Map
+          </a>
+          <a href="my-orders.html" class="cta-btn secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><path d="M9 14h.01"></path><path d="M13 14h.01"></path><path d="M9 18h.01"></path><path d="M13 18h.01"></path></svg>
+            My Orders
+          </a>
         </div>
-        
-        <!-- Hero Content Overlay -->
-        <div class="hero-overlay">
-            <div class="hero-content">
-                <h1 class="hero-title">Hungry? We've Got You Covered!</h1>
-                <p class="hero-subtitle">Discover and order from the best food vendors around Makerere Business School — right at your fingertips.</p>
-                
-                <!-- CTA Buttons -->
-                <div class="cta-buttons">
-                    <a href="vendors.php" class="cta-btn cta-primary">
-                        <i class="fas fa-store"></i> View Vendors
-                    </a>
-                    <a href="map.php" class="cta-btn cta-secondary">
-                        <i class="fas fa-map-marked-alt"></i> See Map
-                    </a>
-                    <a href="my-orders.php" class="cta-btn cta-tertiary">
-                        <i class="fas fa-list"></i> My Orders
-                    </a>
-                </div>
-            </div>
-        </div>
+      </section>
+      
+      <div class="carousel-controls">
+        <button class="carousel-btn prev" id="prev-btn">n
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+        </button>
+        <button class="carousel-btn next" id="next-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+        </button>
+      </div>
+      
+      <div class="carousel-dots" id="carousel-dots">
+        <!-- Dots will be added by JavaScript -->
+      </div>
+    </div>
+    
+    <!-- Featured vendors section -->
+    <section class="featured-section">
+      <h2 class="section-title">Campus Favorites</h2>
+      <p class="section-subtitle">Discover the most popular food spots on campus, all at your fingertips</p>
+      
+      <!-- Content will be added by JavaScript -->
+      <div id="featured-vendors" class="vendors-grid"></div>
     </section>
     
-    <!-- Features Section -->
-    <section class="features-section">
-        <h2 class="section-title">Why SapaSpots?</h2>
-        
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-utensils"></i>
-                </div>
-                <h3 class="feature-title">Variety of Options</h3>
-                <p class="feature-desc">Explore different vendors across campus serving a wide range of delicious meals.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <h3 class="feature-title">Easy Ordering</h3>
-                <p class="feature-desc">Just a few clicks to place your order from any vendor on campus.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-map-marked-alt"></i>
-                </div>
-                <h3 class="feature-title">Interactive Map</h3>
-                <p class="feature-desc">Locate your favorite food spots easily with our campus map.</p>
-            </div>
+    <!-- How it works section -->
+    <section class="how-it-works">
+      <h2 class="section-title">How SapaSpots Works</h2>
+      <p class="section-subtitle">Order your favorite campus meals in just a few simple steps</p>
+      
+      <div class="steps-container">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </div>
+          <h3 class="step-title">Choose a Vendor</h3>
+          <p class="step-description">Browse our selection of campus food vendors and find your favorites</p>
         </div>
+        
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          </div>
+          <h3 class="step-title">Select Your Meal</h3>
+          <p class="step-description">Browse menus and add your favorite items to your tray</p>
+        </div>
+        
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <h3 class="step-title">Complete Order</h3>
+          <p class="step-description">Provide your campus location details and confirm your order</p>
+        </div>
+        
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <h3 class="step-title">Enjoy Your Food</h3>
+          <p class="step-description">Track your order and enjoy your delicious meal when it arrives</p>
+        </div>
+      </div>
     </section>
     
-    <!-- How It Works Section -->
-    <section class="how-it-works-section">
-        <h2 class="section-title">How It Works</h2>
-        
-        <div class="steps-container">
-            <div class="step-card">
-                <div class="step-number">1</div>
-                <i class="fas fa-search step-icon"></i>
-                <h3 class="step-title">Find Vendors</h3>
-                <p class="step-desc">Browse through our list of vendors or locate them on the interactive map.</p>
-            </div>
-            
-            <div class="step-card">
-                <div class="step-number">2</div>
-                <i class="fas fa-hamburger step-icon"></i>
-                <h3 class="step-title">Select Your Food</h3>
-                <p class="step-desc">Check out menus and add your favorite items to your tray.</p>
-            </div>
-            
-            <div class="step-card">
-                <div class="step-number">3</div>
-                <i class="fas fa-check-circle step-icon"></i>
-                <h3 class="step-title">Place Your Order</h3>
-                <p class="step-desc">Review your selections and place your order in just a few clicks.</p>
-            </div>
-            
-            <div class="step-card">
-                <div class="step-number">4</div>
-                <i class="fas fa-smile-beam step-icon"></i>
-                <h3 class="step-title">Enjoy Your Meal</h3>
-                <p class="step-desc">Pick up your order when it's ready and enjoy your delicious meal!</p>
-            </div>
+    <!-- Popular categories section -->
+    <section class="categories-section">
+      <h2 class="section-title">Food Categories</h2>
+      <p class="section-subtitle">Explore our diverse range of food options</p>
+      
+      <div class="categories-grid">
+        <div class="category-card">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2"></path><path d="M18 15h-4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2z"></path></svg>
+          </div>
+          <h3 class="category-name">Local Dishes</h3>
+          <p class="category-count">1 vendor</p>
         </div>
+        
+        <div class="category-card">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.7a2 2 0 0 1-3.41 1.41L4 5.5"></path><path d="M18 3L4 18"></path></svg>
+          </div>
+          <h3 class="category-name">Fast Food</h3>
+          <p class="category-count">1 vendor</p>
+        </div>
+        
+        <div class="category-card">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3"></path><path d="M16 3v3"></path><path d="M4 11h16"></path><path d="M8 14a2 2 0 0 1 4 0c0 .38-.1.73-.29 1.03L7 21h6"></path><rect x="3" y="6" width="18" height="15" rx="2"></rect></svg>
+          </div>
+          <h3 class="category-name">Beverages</h3>
+          <p class="category-count">1 vendor</p>
+        </div>
+        
+        <div class="category-card">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8m-4-4v4m-8-4h16a2 2 0 0 0 1.85-2.76l-1.46-4.39a2 2 0 0 0-1.82-1.24H5.43a2 2 0 0 0-1.85 1.28L2.14 14.3A2 2 0 0 0 4 17zm0-10a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"></path></svg>
+          </div>
+          <h3 class="category-name">Snacks</h3>
+          <p class="category-count">2 vendors</p>
+        </div>
+        
+        <div class="category-card">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          </div>
+          <h3 class="category-name">Breakfast</h3>
+          <p class="category-count">2 vendors</p>
+        </div>
+        
+        <div class="category-card">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.6a8 8 0 0 0-8 8.4c0 4 2 8 8 8s8-4 8-8a8 8 0 0 0-8-8.4Z"></path><path d="m7 10 3 3 7-7"></path></svg>
+          </div>
+          <h3 class="category-name">Vegan Options</h3>
+          <p class="category-count">1 vendor</p>
+        </div>
+      </div>
     </section>
     
-    <!-- Popular Vendors Section -->
-    <section class="popular-vendors-section">
-        <h2 class="section-title">Popular Vendors</h2>
-        
-        <div class="vendors-slider" id="vendors-slider">
-            <!-- Vendor cards will be dynamically loaded here -->
+    <!-- Testimonials section -->
+    <section class="testimonials">
+      <h2 class="section-title">What Our Users Say</h2>
+      <p class="section-subtitle">Hear from students who use SapaSpots daily</p>
+      
+      <div class="testimonials-container">
+        <div class="testimonial-card">
+          <div class="quote-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M11.9 8.4c-.5-.7-1.6-1.1-2.7-1.1-2.3 0-4.4 2-4.4 4.6 0 2.9 2.2 4.9 5.2 4.9 3.5 0 6.2-2.9 6.2-6.9 0-4.7-3-8.1-7.7-8.1V4c3.2 0 5.4 2.2 5.4 5.2 0 2-1.1 3.9-2 3.9-.6 0-.9-.5-.5-1.7l.5-2zM4.5 8.4C4 7.7 2.9 7.3 1.9 7.3c-2.3 0-4.4 2-4.4 4.6 0 2.9 2.2 4.9 5.2 4.9 3.5 0 6.2-2.9 6.2-6.9 0-4.7-3-8.1-7.7-8.1V4c3.2 0 5.4 2.2 5.4 5.2 0 2-1.1 3.9-2 3.9-.6 0-.9-.5-.5-1.7l.4-2z"></path></svg>
+          </div>
+          <p class="testimonial-quote">SapaSpots has been a lifesaver during exam season! I can order food without leaving the library, and the delivery is always quick.</p>
+          <div class="testimonial-author">
+            <img src="default-user.png" alt="Sarah K." class="author-avatar">
+            <div class="author-details">
+              <div class="author-name">Sarah K.</div>
+              <div class="author-info">Computer Science Student</div>
+            </div>
+          </div>
         </div>
         
-        <div class="slider-controls">
-            <button class="slider-btn" id="prev-btn">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="slider-btn" id="next-btn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+        <div class="testimonial-card">
+          <div class="quote-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M11.9 8.4c-.5-.7-1.6-1.1-2.7-1.1-2.3 0-4.4 2-4.4 4.6 0 2.9 2.2 4.9 5.2 4.9 3.5 0 6.2-2.9 6.2-6.9 0-4.7-3-8.1-7.7-8.1V4c3.2 0 5.4 2.2 5.4 5.2 0 2-1.1 3.9-2 3.9-.6 0-.9-.5-.5-1.7l.5-2zM4.5 8.4C4 7.7 2.9 7.3 1.9 7.3c-2.3 0-4.4 2-4.4 4.6 0 2.9 2.2 4.9 5.2 4.9 3.5 0 6.2-2.9 6.2-6.9 0-4.7-3-8.1-7.7-8.1V4c3.2 0 5.4 2.2 5.4 5.2 0 2-1.1 3.9-2 3.9-.6 0-.9-.5-.5-1.7l.4-2z"></path></svg>
+          </div>
+          <p class="testimonial-quote">I love being able to see which vendors are open late. The app has saved me from going hungry after evening classes so many times!</p>
+          <div class="testimonial-author">
+            <img src="default-user.png" alt="David M." class="author-avatar">
+            <div class="author-details">
+              <div class="author-name">David M.</div>
+              <div class="author-info">Engineering Student</div>
+            </div>
+          </div>
         </div>
+        
+        <div class="testimonial-card">
+          <div class="quote-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M11.9 8.4c-.5-.7-1.6-1.1-2.7-1.1-2.3 0-4.4 2-4.4 4.6 0 2.9 2.2 4.9 5.2 4.9 3.5 0 6.2-2.9 6.2-6.9 0-4.7-3-8.1-7.7-8.1V4c3.2 0 5.4 2.2 5.4 5.2 0 2-1.1 3.9-2 3.9-.6 0-.9-.5-.5-1.7l.5-2zM4.5 8.4C4 7.7 2.9 7.3 1.9 7.3c-2.3 0-4.4 2-4.4 4.6 0 2.9 2.2 4.9 5.2 4.9 3.5 0 6.2-2.9 6.2-6.9 0-4.7-3-8.1-7.7-8.1V4c3.2 0 5.4 2.2 5.4 5.2 0 2-1.1 3.9-2 3.9-.6 0-.9-.5-.5-1.7l.4-2z"></path></svg>
+          </div>
+          <p class="testimonial-quote">As a vendor, SapaSpots has helped me reach more students across campus. The platform is easy to use and has boosted my business significantly.</p>
+          <div class="testimonial-author">
+            <img src="default-user.png" alt="Grace T." class="author-avatar">
+            <div class="author-details">
+              <div class="author-name">Grace T.</div>
+              <div class="author-info">Campus Grill Owner</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
+  </main>
+  
+  <!-- Footer will be loaded here -->
+  <div id="footer-container"></div>
+  
+  <script src="localstorage-utils.js"></script>
+  <script src="script.js"></script>
+  <script src="realtime-sync.js"></script>
+  <script src="data.js"></script>
+  <script>
+    // Check if this is a fresh login
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginTimestamp = sessionStorage.getItem('loginTimestamp');
+      const currentTime = new Date().getTime();
+      
+      // If there's no login timestamp or it's within the last minute, consider it a fresh login
+      if (!loginTimestamp || (currentTime - parseInt(loginTimestamp) < 60000)) {
+        // Show personalized welcome message
+        const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+        if (userProfile && userProfile.name) {
+          document.querySelector('.welcome-message').textContent = `Welcome, ${userProfile.name}!`;
+        }
+        
+        // Set login timestamp to current time
+        sessionStorage.setItem('loginTimestamp', currentTime.toString());
+      }
+      
+      // Initialize video carousel
+      initVideoCarousel();
+      
+      // Load featured vendors
+      loadFeaturedVendors();
+    });
     
-    <!-- Testimonials Section -->
-    <section class="testimonials-section">
-        <h2 class="section-title">What Our Users Say</h2>
-        
-        <div class="testimonials-container">
-            <div class="testimonial-card">
-                <p class="testimonial-content">SapaSpots has been a game-changer for me! No more long waits in line during lunch breaks. I can order my food in advance and pick it up when it's ready.</p>
-                <div class="testimonial-author">
-                    <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Sarah" class="author-image">
-                    <div class="author-info">
-                        <div class="author-name">Sarah Namukasa</div>
-                        <div class="author-title">Business Administration Student</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="testimonial-card">
-                <p class="testimonial-content">As a final year student with a tight schedule, SapaSpots helps me save time. The map feature is brilliant for finding new food spots around campus!</p>
-                <div class="testimonial-author">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="David" class="author-image">
-                    <div class="author-info">
-                        <div class="author-name">David Muhwezi</div>
-                        <div class="author-title">Economics Student</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="testimonial-card">
-                <p class="testimonial-content">I love being able to see what's available before heading out for lunch. The app has introduced me to some amazing vendors I wouldn't have discovered otherwise.</p>
-                <div class="testimonial-author">
-                    <img src="https://randomuser.me/api/portraits/women/67.jpg" alt="Grace" class="author-image">
-                    <div class="author-info">
-                        <div class="author-name">Grace Nakitto</div>
-                        <div class="author-title">Marketing Student</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</main>
-
-<script>
     // Video carousel functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const videos = document.querySelectorAll('.carousel-video');
-        let currentVideo = 0;
-        
-        // Function to play the next video
-        function playNextVideo() {
-            // Hide all videos
-            videos.forEach(video => {
-                video.classList.remove('active');
-                video.pause();
-                video.currentTime = 0;
-            });
-            
-            // Increment counter and wrap around if needed
-            currentVideo = (currentVideo + 1) % videos.length;
-            
-            // Show and play the next video
-            videos[currentVideo].classList.add('active');
-            videos[currentVideo].play();
+    function initVideoCarousel() {
+      const videoFiles = [
+        {
+          file: 'burger.mp4',
+          title: 'Delicious Burgers',
+          description: 'Juicy burgers prepared with fresh ingredients'
+        },
+        {
+          file: 'cutting-bread.mp4',
+          title: 'Freshly Baked Bread',
+          description: 'Crispy outside, soft inside - perfect for any meal'
+        },
+        {
+          file: 'cutting-fish.mp4',
+          title: 'Fresh Fish',
+          description: 'Expertly prepared seafood dishes'
+        },
+        {
+          file: 'frying.mp4',
+          title: 'Sizzling Hot',
+          description: 'Watch as our chefs prepare your favorite meals'
+        },
+        {
+          file: 'pork-roasting.mp4',
+          title: 'Slow Roasted',
+          description: 'Tender, flavorful meats roasted to perfection'
+        },
+        {
+          file: 'beef-fried.mp4',
+          title: 'Savory Beef',
+          description: 'Seasoned and cooked just the way you like it'
         }
+      ];
+      
+      const carouselContainer = document.getElementById('video-carousel-container');
+      const carouselDots = document.getElementById('carousel-dots');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      
+      let currentSlide = 0;
+      
+      // Create slides
+      videoFiles.forEach((videoInfo, index) => {
+        // Create slide
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
         
-        // Set up event listeners for videos
-        videos.forEach(video => {
-            video.addEventListener('ended', playNextVideo);
+        // Create video element
+        const video = document.createElement('video');
+        video.src = videoInfo.file;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        
+        // Create caption
+        const caption = document.createElement('div');
+        caption.className = 'carousel-slide-caption';
+        caption.innerHTML = `
+          <h3>${videoInfo.title}</h3>
+          <p>${videoInfo.description}</p>
+        `;
+        
+        // Add elements to slide
+        slide.appendChild(video);
+        slide.appendChild(caption);
+        
+        // Add slide to container
+        carouselContainer.appendChild(slide);
+        
+        // Create dot
+        const dot = document.createElement('div');
+        dot.className = 'carousel-dot';
+        if (index === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => {
+          goToSlide(index);
         });
         
-        // Start playing the first video
-        videos[0].play();
+        carouselDots.appendChild(dot);
+      });
+      
+      // Event listeners for controls
+      prevBtn.addEventListener('click', prevSlide);
+      nextBtn.addEventListener('click', nextSlide);
+      
+      // Initial setup - play first video
+      if (videoFiles.length > 0) {
+        const firstVideo = carouselContainer.querySelector('video');
+        if (firstVideo) {
+          firstVideo.play().catch(err => {
+            console.log('Video autoplay was prevented:', err);
+          });
+        }
+      }
+      
+      // Auto-advance slides
+      setInterval(() => {
+        nextSlide();
+      }, 8000);
+      
+      function goToSlide(index) {
+        const slides = carouselContainer.querySelectorAll('.carousel-slide');
+        const dots = carouselDots.querySelectorAll('.carousel-dot');
         
-        // For demonstration purposes, let's automatically close the welcome message after 5 seconds
-        const welcomeAlert = document.getElementById('welcome-alert');
-        if (welcomeAlert) {
-            setTimeout(() => {
-                welcomeAlert.style.opacity = '0';
-                welcomeAlert.style.transform = 'translateY(-20px)';
-                welcomeAlert.style.transition = 'all 0.5s ease';
-                
-                setTimeout(() => {
-                    welcomeAlert.style.display = 'none';
-                }, 500);
-            }, 5000);
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        
+        // Pause all videos
+        carouselContainer.querySelectorAll('video').forEach(video => {
+          video.pause();
+        });
+        
+        // Calculate slide position
+        carouselContainer.style.transform = `translateX(-${index * 100}%)`;
+        
+        // Update active dot
+        dots.forEach(dot => dot.classList.remove('active'));
+        dots[index].classList.add('active');
+        
+        // Play current video
+        const currentVideo = slides[index].querySelector('video');
+        if (currentVideo) {
+          currentVideo.currentTime = 0;
+          currentVideo.play().catch(err => {
+            console.log('Video play was prevented:', err);
+          });
         }
         
-        // Load popular vendors from data.js
-        loadPopularVendors();
+        currentSlide = index;
+      }
+      
+      function nextSlide() {
+        goToSlide(currentSlide + 1);
+      }
+      
+      function prevSlide() {
+        goToSlide(currentSlide - 1);
+      }
+    }
+    
+    // Load featured vendors
+    function loadFeaturedVendors() {
+      const vendors = JSON.parse(localStorage.getItem('vendors')) || [];
+      const featuredVendorsContainer = document.getElementById('featured-vendors');
+      
+      // Map vendors to appropriate local images
+      const vendorImages = {
+        'Campus Grill': 'burger.jpg',
+        'Rolex King': 'rolex.jpg',
+        'African Cuisine': 'posho.jpg',
+        'Campus Coffee': 'coffee.jpeg'
+      };
+      
+      // Only select specific vendors (v1, v2, v4)
+      const vendorIds = ['v1', 'v2', 'v4'];
+      
+      if (featuredVendorsContainer) {
+        // Filter selected vendors
+        const displayVendors = vendors.filter(vendor => vendorIds.includes(vendor.vendorId));
         
-        // Vendor slider functionality
-        const slider = document.getElementById('vendors-slider');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        
-        if (slider && prevBtn && nextBtn) {
-            // Scroll by one card width plus gap
-            const scrollAmount = 300;
-            
-            nextBtn.addEventListener('click', () => {
-                slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-            });
-            
-            prevBtn.addEventListener('click', () => {
-                slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-            });
-        }
-        
-        // Function to load popular vendors from data.js
-        function loadPopularVendors() {
-            const vendorsSlider = document.getElementById('vendors-slider');
-            if (!vendorsSlider) return;
-            
-            // Get vendors from localStorage or defaultVendors
-            let vendors = [];
-            try {
-                const vendorsFromStorage = localStorage.getItem('vendors');
-                if (vendorsFromStorage) {
-                    vendors = JSON.parse(vendorsFromStorage);
-                } else if (window.defaultVendors) {
-                    vendors = window.defaultVendors;
-                }
-            } catch (error) {
-                console.error('Error loading vendors:', error);
-                if (window.defaultVendors) {
-                    vendors = window.defaultVendors;
-                }
-            }
-            
-            // Sort vendors by rating (highest first) and take the top 5
-            const popularVendors = [...vendors]
-                .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-                .slice(0, 5);
-            
-            // Clear slider contents
-            vendorsSlider.innerHTML = '';
-            
-            // Create vendor cards
-            popularVendors.forEach(vendor => {
-                // Create vendor card element
-                const vendorCard = document.createElement('div');
-                vendorCard.className = 'vendor-card';
-                
-                // Generate rating stars
-                let starsHtml = '';
-                const rating = vendor.rating || 0;
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= rating) {
-                        starsHtml += '<i class="fas fa-star"></i>';
-                    } else if (i - 0.5 <= rating) {
-                        starsHtml += '<i class="fas fa-star-half-alt"></i>';
-                    } else {
-                        starsHtml += '<i class="far fa-star"></i>';
-                    }
-                }
-                
-                // Set inner HTML
-                vendorCard.innerHTML = `
-                    <img src="${vendor.imageUrl}" alt="${vendor.name}" class="vendor-image">
-                    <div class="vendor-info">
-                        <h3 class="vendor-name">${vendor.name}</h3>
-                        <div class="vendor-location">
-                            <i class="fas fa-map-marker-alt"></i> ${vendor.location}
-                        </div>
-                        <div class="vendor-rating">
-                            <div class="rating-stars">
-                                ${starsHtml}
-                            </div>
-                            <span class="rating-count">(${vendor.reviewCount || 0} ratings)</span>
-                        </div>
-                        <p class="vendor-specialty">Specialty: ${vendor.specialty || 'Various Foods'}</p>
-                        <span class="vendor-status ${vendor.open ? 'vendor-open' : 'vendor-closed'}">
-                            ${vendor.open ? 'Open Now' : 'Closed'}
-                        </span>
-                    </div>
-                `;
-                
-                // Add click event listener
-                vendorCard.addEventListener('click', () => {
-                    window.location.href = `vendor.php?id=${vendor.vendorId}`;
-                });
-                
-                // Append to slider
-                vendorsSlider.appendChild(vendorCard);
-            });
-            
-            // If no vendors were loaded, show a message
-            if (popularVendors.length === 0) {
-                vendorsSlider.innerHTML = '<p style="width: 100%; text-align: center; padding: 20px;">No vendors available at the moment.</p>';
-            }
-        }
-    });
-</script>
-
-<?php include 'footer.php'; ?> 
+        displayVendors.forEach(vendor => {
+          const vendorCard = document.createElement('div');
+          vendorCard.className = 'vendor-card';
+          
+          const statusClass = vendor.open ? 'status-open' : 'status-closed';
+          const statusText = vendor.open ? 'OPEN' : 'CLOSED';
+          
+          // Get the appropriate image for this vendor
+          const imageFile = vendorImages[vendor.name] || 'food-placeholder.svg';
+          
+          vendorCard.innerHTML = `
+            <div class="vendor-card-image">
+              <img src="${imageFile}" alt="${vendor.name}" loading="lazy">
+              <div class="vendor-status ${statusClass}">${statusText}</div>
+            </div>
+            <div class="vendor-card-content">
+              <h3 class="vendor-card-title">${vendor.name}</h3>
+              <p class="vendor-card-location">${vendor.location}</p>
+              <div class="vendor-card-footer">
+                <a href="vendor.html?id=${vendor.vendorId}" class="view-menu-btn">View Menu</a>
+              </div>
+            </div>
+          `;
+          
+          featuredVendorsContainer.appendChild(vendorCard);
+        });
+      }
+    }
+  </script>
+</body>
+</html> 
